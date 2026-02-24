@@ -99,3 +99,23 @@ Dla Twojego przypadku ustaw na start:
 5. `landingVerticalDamping = 0.1`
 
 Jeśli nadal raz podbija, zmniejsz `suspensionDistance` do `0.14-0.16`.
+
+
+## Gdy wariuje dokładnie przy dotyku WheelCollider
+To prawie zawsze znaczy: **WheelCollider ma złą pozycję albo zły radius** względem wizualnego koła.
+
+W nowym `CarController` dodałem auto-korektę:
+- `autoAlignWheelColliders = true`
+- skrypt ustawia pozycję `WheelCollider` na pozycję mesha koła
+- skrypt liczy `radius` z rozmiaru mesha (`wheelRadiusScale`)
+
+Co zrobić w Unity teraz:
+1. Na obiekcie auta zostaw `autoAlignWheelColliders = true`.
+2. Ustaw `wheelRadiusScale = 0.95`.
+3. Kliknij Play i sprawdź, czy koła nie zaczynają pod ziemią.
+4. Jeśli nadal podbija: zmniejsz `wheelRadiusScale` do `0.9`.
+5. Ustaw `forceAppPointDistance = 0.02-0.08` (za duże wartości destabilizują).
+
+Szybki test diagnostyczny:
+- Ustaw auto 2m nad plane i odpal bez gazu.
+- Jeśli po kontakcie dalej odbija: problem jest w geometrii/parametrach WheelCollider, nie w napędzie.

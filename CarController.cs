@@ -36,6 +36,11 @@ public class CarController : MonoBehaviour
     public float wheelDampingRate = 1.2f;
     public float forwardFrictionStiffness = 1.4f;
     public float sidewaysFrictionStiffness = 2.0f;
+    public float forceAppPointDistance = 0.05f;
+
+    [Header("Wheel setup helper")]
+    public bool autoAlignWheelColliders = true;
+    public float wheelRadiusScale = 0.95f;
 
     float moveInput;
     float steerInput;
@@ -52,6 +57,7 @@ public class CarController : MonoBehaviour
 
     void Start()
     {
+        AlignAllWheelCollidersToMeshes();
         rb.centerOfMass += centerOfMassOffset;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
@@ -88,6 +94,44 @@ public class CarController : MonoBehaviour
         wasGrounded = grounded;
     }
 
+
+    void OnValidate()
+    {
+        if (!autoAlignWheelColliders) return;
+
+        AlignWheelColliderToMesh(WheelCollider_FL, FrontLeftWheel);
+        AlignWheelColliderToMesh(WheelCollider_FR, FrontRightWheel);
+        AlignWheelColliderToMesh(WheelCollider_RL, RearLeftWheel);
+        AlignWheelColliderToMesh(WheelCollider_RR, RearRightWheel);
+    }
+
+    void AlignAllWheelCollidersToMeshes()
+    {
+        if (!autoAlignWheelColliders) return;
+
+        AlignWheelColliderToMesh(WheelCollider_FL, FrontLeftWheel);
+        AlignWheelColliderToMesh(WheelCollider_FR, FrontRightWheel);
+        AlignWheelColliderToMesh(WheelCollider_RL, RearLeftWheel);
+        AlignWheelColliderToMesh(WheelCollider_RR, RearRightWheel);
+    }
+
+    void AlignWheelColliderToMesh(WheelCollider wc, Transform wheelMesh)
+    {
+        if (wc == null || wheelMesh == null) return;
+
+        wc.transform.position = wheelMesh.position;
+
+        if (wheelMesh.TryGetComponent(out Renderer r))
+        {
+            Bounds b = r.bounds;
+            float meshRadius = Mathf.Max(b.extents.y, b.extents.x, b.extents.z) * wheelRadiusScale;
+            if (meshRadius > 0.05f)
+            {
+                wc.radius = meshRadius;
+            }
+        }
+    }
+
     void ConfigureWheelCollider(WheelCollider wc)
     {
         if (wc == null) return;
@@ -101,6 +145,7 @@ public class CarController : MonoBehaviour
         wc.suspensionSpring = spring;
 
         wc.wheelDampingRate = wheelDampingRate;
+        wc.forceAppPointDistance = forceAppPointDistance;
 
         WheelFrictionCurve forward = wc.forwardFriction;
         forward.stiffness = forwardFrictionStiffness;
